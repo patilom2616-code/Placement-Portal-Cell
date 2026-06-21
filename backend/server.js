@@ -16,13 +16,14 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
-// Connect to DB and Seed
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Connect DB
 connectDB().then(() => {
   seedDB();
 });
-
-app.use(cors());
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Placement Cell Portal API Running");
