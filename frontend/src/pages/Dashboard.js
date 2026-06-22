@@ -56,6 +56,10 @@ function Dashboard() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [resumeText, setResumeText] = useState("");
+  const [resumeScore, setResumeScore] = useState(null);
+  const [foundSkills, setFoundSkills] = useState([]);
+  const [missingSkills, setMissingSkills] = useState([]);
 
   // Parse JWT token helper
   const parseJwt = (token) => {
@@ -298,7 +302,32 @@ function Dashboard() {
       setError("Failed to register company.");
     }
   };
+  const reviewResume = () => {
+  const requiredSkills = [
+    "Java",
+    "Python",
+    "React",
+    "Node",
+    "MongoDB",
+    "SQL"
+  ];
 
+  const found = requiredSkills.filter(skill =>
+    resumeText.toLowerCase().includes(skill.toLowerCase())
+  );
+
+  const missing = requiredSkills.filter(
+    skill => !found.includes(skill)
+  );
+
+  const score = Math.round(
+    (found.length / requiredSkills.length) * 100
+  );
+
+  setFoundSkills(found);
+  setMissingSkills(missing);
+  setResumeScore(score);
+};
   if (!currentUser) {
     return <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>Loading portal workspace...</div>;
   }
@@ -424,6 +453,46 @@ function Dashboard() {
                   Navigate through the sidebar panels to list openings, create profiles, register companies, and submit application requests. If you are logged in as a <strong>Company Recruiter</strong> or <strong>Portal Administrator</strong>, you can add new jobs and partner companies directly using active action buttons inside each panel.
                 </p>
                 <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  <div
+  style={{
+    marginTop: "30px",
+    padding: "25px",
+    background: "rgba(8, 11, 17, 0.3)",
+    borderRadius: "16px",
+    border: "1px solid var(--border-color)"
+  }}
+>
+  <h3>AI Resume Review</h3>
+
+  <textarea
+    rows="8"
+    placeholder="Paste resume text here..."
+    value={resumeText}
+    onChange={(e) => setResumeText(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "12px",
+      marginTop: "15px",
+      borderRadius: "8px"
+    }}
+  />
+
+  <button
+    className="btn-primary"
+    style={{ marginTop: "15px", width: "auto" }}
+    onClick={reviewResume}
+  >
+    Review Resume
+  </button>
+
+  {resumeScore !== null && (
+    <div style={{ marginTop: "20px" }}>
+      <h3>Resume Score: {resumeScore}%</h3>
+      <p><b>Skills Found:</b> {foundSkills.join(", ") || "None"}</p>
+      <p><b>Missing Skills:</b> {missingSkills.join(", ") || "None"}</p>
+    </div>
+  )}
+</div>
                   <button className="btn-primary" style={{ width: "auto" }} onClick={() => setActiveTab("jobs")}>View Jobs</button>
                   <button className="btn-secondary" onClick={() => setActiveTab("students")}>Verify Students</button>
                 </div>
