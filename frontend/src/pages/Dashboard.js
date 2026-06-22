@@ -368,6 +368,19 @@ const chartData = {
   job.title.toLowerCase().includes(searchTerm.toLowerCase())
 );
 
+const recommendedJobs = jobs.filter((job) => {
+  if (!studentProfile.skills) return false;
+
+  const studentSkills = studentProfile.skills
+    .toLowerCase()
+    .split(",")
+    .map((skill) => skill.trim());
+
+  return job.skillsRequired?.some((skill) =>
+    studentSkills.includes(skill.toLowerCase())
+  );
+});
+
   return (
     <div className="dashboard-container">
       {/* Top Header Navbar */}
@@ -428,6 +441,12 @@ const chartData = {
             >
               📝 Applications
             </li>
+            <li
+  className={`nav-item ${activeTab === "recommended" ? "active" : ""}`}
+  onClick={() => setActiveTab("recommended")}
+>
+  ⭐ Recommended Jobs
+</li>
           </ul>
         </aside>
 
@@ -624,6 +643,26 @@ const chartData = {
           )}
 
           {/* ================= STUDENTS TAB ================= */}
+          {activeTab === "recommended" && (
+  <div>
+    <div className="panel-header">
+      <h2 className="panel-title">Recommended Jobs</h2>
+    </div>
+
+    {recommendedJobs.length === 0 ? (
+      <div>No recommended jobs found.</div>
+    ) : (
+      <div className="data-grid">
+        {recommendedJobs.map((job) => (
+          <div className="data-card" key={job._id}>
+            <h3>{job.title}</h3>
+            <p>{job.companyName}</p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
           {activeTab === "students" && (
             <div>
               <div className="panel-header">
