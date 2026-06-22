@@ -1,6 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 const API_URL = "https://placement-portal-cell.onrender.com";
 
 function Dashboard() {
@@ -56,6 +74,7 @@ function Dashboard() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [resumeText, setResumeText] = useState("");
   const [resumeScore, setResumeScore] = useState(null);
   const [foundSkills, setFoundSkills] = useState([]);
@@ -328,9 +347,26 @@ function Dashboard() {
   setMissingSkills(missing);
   setResumeScore(score);
 };
+const chartData = {
+  labels: ["Students", "Companies", "Jobs", "Applications"],
+  datasets: [
+    {
+      label: "Portal Analytics",
+      data: [
+        stats.totalStudents,
+        stats.totalCompanies,
+        stats.totalJobs,
+        stats.totalApplications
+      ]
+    }
+  ]
+};
   if (!currentUser) {
     return <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>Loading portal workspace...</div>;
   }
+  const filteredJobs = jobs.filter((job) =>
+  job.title.toLowerCase().includes(searchTerm.toLowerCase())
+);
 
   return (
     <div className="dashboard-container">
@@ -430,6 +466,18 @@ function Dashboard() {
                   <span className="stats-value">{stats.totalStudents}</span>
                   <span className="stats-desc">Total candidates enrolled</span>
                 </div>
+                <div
+  style={{
+    marginTop: "40px",
+    padding: "25px",
+    background: "rgba(8,11,17,0.3)",
+    borderRadius: "16px",
+    border: "1px solid var(--border-color)"
+  }}
+>
+  <h3 style={{ marginBottom: "20px" }}>Analytics Dashboard</h3>
+  <Bar data={chartData} />
+</div>
                 <div className="stats-card">
                   <span className="stats-label">Partner Companies</span>
                   <span className="stats-value">{stats.totalCompanies}</span>
@@ -505,6 +553,18 @@ function Dashboard() {
             <div>
               <div className="panel-header">
                 <h2 className="panel-title">Active Job Postings</h2>
+                <input
+  type="text"
+  placeholder="Search jobs..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  style={{
+    width: "100%",
+    padding: "12px",
+    margin: "15px 0",
+    borderRadius: "8px"
+  }}
+/>
                 {(currentUser.role === "company" || currentUser.role === "admin") && (
                   <button className="btn-primary" style={{ width: "auto" }} onClick={() => setShowJobModal(true)}>
                     + Post New Job
@@ -516,7 +576,7 @@ function Dashboard() {
                 <div style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>No job openings listed at the moment.</div>
               ) : (
                 <div className="data-grid">
-                  {jobs.map((job) => {
+                  {filteredJobs.map((job) => {
                     const studentApplied = applications.some(
                       (app) => app.studentEmail === currentUser.email && app.jobTitle === job.title && app.companyName === job.companyName
                     );
